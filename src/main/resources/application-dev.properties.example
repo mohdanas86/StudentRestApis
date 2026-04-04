@@ -1,0 +1,22 @@
+# Development Profile Configuration
+# Copy this file to application-dev.properties and update with your credentials
+
+spring.profiles.active=dev
+
+# Database configuration for development
+spring.datasource.url=jdbc:postgresql://localhost:5432/your_dev_db
+spring.datasource.username=your_dev_user
+spring.datasource.password=your_dev_password
+
+# Enable SQL logging for debugging
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.properties.hibernate.highlight_sql=true
+
+# Hibernate DDL strategy
+spring.jpa.hibernate.ddl-auto=create-drop
+
+# Logging levels
+logging.level.root=INFO
+logging.level.com.anas=DEBUG
+logging.level.org.springframework=DEBUG

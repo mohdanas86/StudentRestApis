@@ -1,0 +1,31 @@
+spring.application.name=StudentRestApis
+
+server.port=8000
+server.servlet.context-path=/api/v1
+
+# Database connection - Replace with your credentials
+spring.datasource.url=jdbc:postgresql://localhost:5432/postgres
+spring.datasource.username=postgres
+spring.datasource.password=your_secure_password
+
+# Hibernate DDL strategy
+#spring.jpa.hibernate.ddl-auto=create
+spring.jpa.hibernate.ddl-auto=create-drop
+
+# SQL logging (disable in production)
+spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+
+# Database initialization
+spring.sql.init.mode=always
+spring.jpa.defer-datasource-initialization=true
+
+# Error handling
+spring.mvc.problemdetails.enabled=true
+
+# Swagger/OpenAPI Configuration
+springdoc.packages-to-scan=com.anas.StudentRestApis.Controllers
+springdoc.api-docs.path=/api-docs
+springdoc.swagger-ui.path=/swagger-ui.html
+springdoc.swagger-ui.enabled=true
+springdoc.swagger-ui.operations-sorter=method

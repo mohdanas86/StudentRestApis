@@ -1,0 +1,74 @@
+### Security: Environment & Configuration ###
+# Properties files with credentials
+src/main/resources/application.properties
+src/main/resources/application-*.properties
+!src/main/resources/application.properties.example
+!src/main/resources/application-dev.properties.example
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+### Maven ###
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### Build Files ###
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+*.iws
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+*.code-workspace
+
+### OS ###
+.DS_Store
+Thumbs.db
+
+### Logs ###
+logs/
+*.log
+*.gz
+
+### IDE ###
+*.swp
+*.swo
+*~
+
+### Dependencies & Security ###
+*.pem
+*.key
+*.crt
+*.p12
+secrets.txt
+
+
+data.sql
