@@ -7,15 +7,10 @@ import com.anas.StudentRestApis.Service.TeacherServices;
 import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
-/**
- * Implementation of TeacherServices - Handles teacher business logic
- */
 @Service
 @AllArgsConstructor
 public class TeacherServicesImpl implements TeacherServices {
@@ -24,28 +19,27 @@ public class TeacherServicesImpl implements TeacherServices {
     private final ModelMapper modelMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public List<TeacherEntityDto> findAllTeachers() {
         return teacherRepository.findAll()
                 .stream()
-                .filter(teacher -> teacher.getIsActive() != null && teacher.getIsActive())
+                // Filter only active teachers
+                .filter(teacher -> Boolean.TRUE.equals(teacher.getIsActive()))
                 .map(teacherEntity -> {
+                    // 1. Basic Mapping (IDs, names, email, specialization)
                     TeacherEntityDto dto = modelMapper.map(teacherEntity, TeacherEntityDto.class);
 
+                    // 2. Map the Single College Name (from the direct relationship)
+                    if (teacherEntity.getCollege() != null) {
+                        dto.setCollegeName(teacherEntity.getCollege().getCollegeName());
+                    }
+
+                    // 3. Map Course Names (from the Many-to-Many relationship)
                     if (teacherEntity.getCourses() != null && !teacherEntity.getCourses().isEmpty()) {
-                        // Extract course names
-                        List<String> courseNames = teacherEntity.getCourses().stream()
+                        List<String> names = teacherEntity.getCourses().stream()
                                 .map(CourseEntity::getCourseName)
                                 .toList();
-                        dto.setCourseNames(courseNames);
-
-                        // Extract unique colleges where teacher teaches (sorted)
-                        List<String> collegeNames = teacherEntity.getCourses().stream()
-                                .map(course -> course.getCollege().getCollegeName())
-                                .collect(Collectors.toCollection(HashSet::new))
-                                .stream()
-                                .sorted()
-                                .toList();
-                        dto.setCollegeNames(collegeNames);
+                        dto.setCourseNames(names);
                     }
 
                     return dto;

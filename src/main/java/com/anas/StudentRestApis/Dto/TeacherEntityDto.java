@@ -24,7 +24,8 @@ public class TeacherEntityDto {
     private String lastName;
     private String email;
     private String specialization;
-    private List<String> collegeNames;
+    private Long collegeId;
+    private String collegeName;
     private List<String> courseNames;
     private Boolean isActive;
 

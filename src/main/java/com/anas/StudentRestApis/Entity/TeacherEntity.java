@@ -15,7 +15,8 @@ import java.util.List;
 /**
  * TeacherEntity - Represents a teacher in the system
  * Each teacher is uniquely identified by employeeId and email.
- * A teacher can teach multiple courses across different colleges.
+ * A teacher belongs to one college and teaches multiple courses in that
+ * college.
  */
 @Entity
 @Table(name = "teachers", indexes = {
@@ -47,6 +48,10 @@ public class TeacherEntity {
 
     @Column
     private String specialization;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "college_id", nullable = false)
+    private CollegeEntity college;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
     private Boolean isActive = true;
