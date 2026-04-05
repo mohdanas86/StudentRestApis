@@ -6,8 +6,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDateTime;
 import java.util.List;
+
+/**
+ * CollegeEntity - Represents a college/institution
+ */
 @Entity
 @Table(name = "colleges")
 @Data
@@ -29,7 +36,15 @@ public class CollegeEntity {
     @Column
     private String deanName;
 
+    @CreationTimestamp
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(nullable = false)
+    private LocalDateTime updatedAt;
+
     @OneToMany(mappedBy = "college", cascade = CascadeType.ALL)
-    @JsonIgnoreProperties("college") // FIX: Stop Course from looking back at College
+    @JsonIgnoreProperties("college")
     private List<CourseEntity> courses;
 }

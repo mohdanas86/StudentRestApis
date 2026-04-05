@@ -17,200 +17,102 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * GlobalExceptionHandler - Centralized exception handling
- *
- * @RestControllerAdvice: Applied to all @RestController classes
- *
- * Catches exceptions and converts to ErrorResponse
- * Returns appropriate HTTP status codes
- * Logs errors for monitoring
+ * GlobalExceptionHandler - Centralized exception handling for REST API
+ * Catches exceptions and converts to standardized ErrorResponse
  */
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    /**
-     * Handle ResourceNotFoundException (404)
-     *
-     * When: Resource not found in database
-     * HTTP Status: 404 Not Found
-     * Example: Student with id 999 not found
-     */
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
-            ResourceNotFoundException ex,
-            WebRequest request
-    ){
-        log.warn("Resource not found: {}", ex.getMessage());
+        private ErrorResponse buildErrorResponse(Exception ex, HttpStatus status, String code, WebRequest request) {
+                return ErrorResponse.builder()
+                                .type("about:blank")
+                                .title(status.getReasonPhrase())
+                                .status(status.value())
+                                .details(ex.getMessage())
+                                .instance(request.getDescription(false).replace("uri=", ""))
+                                .timestamp(LocalDateTime.now())
+                                .code(code)
+                                .build();
+        }
 
-        ErrorResponse response = ErrorResponse.builder()
-                .type("about:blank")
-                .title("Not Found")
-                .status(HttpStatus.NOT_FOUND.value())
-                .details(ex.getMessage())
-                .instance(request.getDescription(false).replace("uri=", ""))
-                .timestamp(LocalDateTime.now())
-                .code("RESOURCE_NOT_FOUND")
-                .build();
+        @ExceptionHandler(ResourceNotFoundException.class)
+        public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
+                        ResourceNotFoundException ex, WebRequest request) {
+                log.warn("Resource not found: {}", ex.getMessage());
+                return new ResponseEntity<>(
+                                buildErrorResponse(ex, HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", request),
+                                HttpStatus.NOT_FOUND);
+        }
 
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
-    }
+        @ExceptionHandler(ValidationException.class)
+        public ResponseEntity<ErrorResponse> handleValidationException(
+                        ValidationException ex, WebRequest request) {
+                log.warn("Validation failed: {}", ex.getMessage());
+                return new ResponseEntity<>(
+                                buildErrorResponse(ex, HttpStatus.BAD_REQUEST, "VALIDATION_ERROR", request),
+                                HttpStatus.BAD_REQUEST);
+        }
 
-    /**
-     * Handle ValidationException (400)
-     *
-     * When: Invalid input data or failed validation
-     * HTTP Status: 400 Bad Request
-     */
-    @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<ErrorResponse> handleValidationException(
-            ValidationException ex,
-            WebRequest request
-    ){
-        log.warn("Validation failed: {}", ex.getMessage());
+        @ExceptionHandler(DuplicateResourceException.class)
+        public ResponseEntity<ErrorResponse> handleDuplicateResourceException(
+                        DuplicateResourceException ex, WebRequest request) {
+                log.warn("Duplicate resource: {}", ex.getMessage());
+                return new ResponseEntity<>(
+                                buildErrorResponse(ex, HttpStatus.CONFLICT, "DUPLICATE_RESOURCE", request),
+                                HttpStatus.CONFLICT);
+        }
 
-        ErrorResponse response = ErrorResponse.builder()
-                .type("about:blank")
-                .title("Bad Request")
-                .status(HttpStatus.BAD_REQUEST.value())
-                .details(ex.getMessage())
-                .instance(request.getDescription(false).replace("uri=", ""))
-                .timestamp(LocalDateTime.now())
-                .code("VALIDATION_ERROR")
-                .build();
+        @ExceptionHandler(InvalidCredentialsException.class)
+        public ResponseEntity<ErrorResponse> handleInvalidCredentialException(
+                        InvalidCredentialsException ex, WebRequest request) {
+                log.warn("Invalid credential: {}", ex.getMessage());
+                return new ResponseEntity<>(
+                                buildErrorResponse(ex, HttpStatus.UNAUTHORIZED, "INVALID_CREDENTIAL", request),
+                                HttpStatus.UNAUTHORIZED);
+        }
 
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-    }
+        @ExceptionHandler(InsufficientPermissionException.class)
+        public ResponseEntity<ErrorResponse> handleInsufficientPermissionException(
+                        InsufficientPermissionException ex, WebRequest request) {
+                log.warn("Permission denied: {}", ex.getMessage());
+                return new ResponseEntity<>(
+                                buildErrorResponse(ex, HttpStatus.FORBIDDEN, "INSUFFICIENT_PERMISSION", request),
+                                HttpStatus.FORBIDDEN);
+        }
 
-    /**
-     * Handle DuplicateResourceException (409)
-     *
-     * When: Resource already exists (unique constraint)
-     * HTTP Status: 409 Conflict
-     */
-    @ExceptionHandler(DuplicateResourceException.class)
-    public ResponseEntity<ErrorResponse> handleDuplicateResourceException(
-            DuplicateResourceException ex,
-            WebRequest request
-    ){
-        log.warn("Duplicate resource: {}", ex.getMessage());
+        @Override
+        protected ResponseEntity<Object> handleMethodArgumentNotValid(
+                        MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status,
+                        WebRequest request) {
+                log.warn("Method argument validation failed");
 
-        ErrorResponse response = ErrorResponse.builder()
-                .type("about:blank")
-                .title("Conflict")
-                .status(HttpStatus.CONFLICT.value()) // Corrected from CONTINUE
-                .details(ex.getMessage())
-                .instance(request.getDescription(false).replace("uri=", ""))
-                .timestamp(LocalDateTime.now())
-                .code("DUPLICATE_RESOURCE")
-                .build();
+                Map<String, String> fieldErrors = new HashMap<>();
+                ex.getBindingResult().getAllErrors().forEach(error -> {
+                        String fieldName = ((FieldError) error).getField();
+                        String errorMessage = error.getDefaultMessage();
+                        fieldErrors.put(fieldName, errorMessage);
+                });
 
-        return new ResponseEntity<>(response, HttpStatus.CONFLICT);
-    }
+                ErrorResponse response = ErrorResponse.builder()
+                                .type("about:blank")
+                                .title("Bad Request")
+                                .status(status.value())
+                                .details("Validation failed")
+                                .instance(request.getDescription(false).replace("uri=", ""))
+                                .timestamp(LocalDateTime.now())
+                                .code("VALIDATION_ERROR")
+                                .errors(fieldErrors)
+                                .build();
 
-    /**
-     * Handle InvalidCredentialsException (401)
-     */
-    @ExceptionHandler(InvalidCredentialsException.class)
-    public ResponseEntity<ErrorResponse> handleInvalidCredentialException(
-            InvalidCredentialsException ex,
-            WebRequest request
-    ) {
-        log.warn("Invalid credential: {}", ex.getMessage());
+                return new ResponseEntity<>(response, status);
+        }
 
-        ErrorResponse response = ErrorResponse.builder()
-                .type("about:blank")
-                .title("Unauthorized")
-                .status(HttpStatus.UNAUTHORIZED.value())
-                .details(ex.getMessage())
-                .instance(request.getDescription(false).replace("uri=", ""))
-                .timestamp(LocalDateTime.now())
-                .code("INVALID_CREDENTIAL")
-                .build();
-
-        return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
-    }
-
-    /**
-     * Handle InsufficientPermissionException (403)
-     */
-    @ExceptionHandler(InsufficientPermissionException.class)
-    public ResponseEntity<ErrorResponse> handleInsufficientPermissionException(
-            InsufficientPermissionException ex,
-            WebRequest request
-    ){
-        log.warn("Permission denied: {}", ex.getMessage());
-
-        ErrorResponse response = ErrorResponse.builder()
-                .type("about:blank")
-                .title("Forbidden")
-                .status(HttpStatus.FORBIDDEN.value())
-                .details(ex.getMessage())
-                .instance(request.getDescription(false).replace("uri=", ""))
-                .timestamp(LocalDateTime.now())
-                .code("INSUFFICIENT_PERMISSION")
-                .build();
-
-        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
-    }
-
-    /**
-     * Handle MethodArgumentNotValidException (400)
-     *
-     * When: @Valid annotation validation fails
-     * HTTP Status: 400 Bad Request
-     * * NOTE: We override the parent method to avoid the "Ambiguous @ExceptionHandler" error.
-     */
-    @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(
-            MethodArgumentNotValidException ex,
-            HttpHeaders headers,
-            HttpStatusCode status,
-            WebRequest request) {
-
-        log.warn("Method argument validation failed");
-
-        Map<String, String> fieldErrors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            fieldErrors.put(fieldName, errorMessage);
-        });
-
-        ErrorResponse response = ErrorResponse.builder()
-                .type("about:blank")
-                .title("Bad Request")
-                .status(status.value())
-                .details("Validation failed")
-                .instance(request.getDescription(false).replace("uri=", ""))
-                .timestamp(LocalDateTime.now())
-                .code("VALIDATION_ERROR")
-                .errors(fieldErrors)
-                .build();
-
-        return new ResponseEntity<>(response, status);
-    }
-
-    /**
-     * Handle Generic Exceptions (500)
-     */
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleGenericException(
-            Exception ex,
-            WebRequest request) {
-
-        log.error("Unexpected error occurred", ex);
-
-        ErrorResponse response = ErrorResponse.builder()
-                .type("about:blank")
-                .title("Internal Server Error")
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .details("An unexpected error occurred. Please try again later.")
-                .instance(request.getDescription(false).replace("uri=", ""))
-                .timestamp(LocalDateTime.now())
-                .code("INTERNAL_ERROR")
-                .build();
-
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+        @ExceptionHandler(Exception.class)
+        public ResponseEntity<ErrorResponse> handleGenericException(Exception ex, WebRequest request) {
+                log.error("Unexpected error occurred", ex);
+                return new ResponseEntity<>(
+                                buildErrorResponse(ex, HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", request),
+                                HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 }
