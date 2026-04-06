@@ -1,13 +1,17 @@
 package com.anas.StudentRestApis.Controllers;
 
 import com.anas.StudentRestApis.Common.ApiResponse;
+import com.anas.StudentRestApis.Dto.CreateTeacherRequestDto;
 import com.anas.StudentRestApis.Dto.TeacherEntityDto;
 import com.anas.StudentRestApis.Service.TeacherServices;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -50,6 +54,32 @@ public class TeacherControllers {
             log.error("Error fetching teachers", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ApiResponse.error("Failed to fetch teachers", e.getMessage()));
+        }
+    }
+
+    /**
+     * POST /teachers - Creates a new teacher
+     * 
+     * @param request CreateTeacherRequestDto with teacher details
+     * @return ResponseEntity with:
+     *         - 201 Created: Newly created teacher with full details
+     *         - 400 Bad Request: If validation fails or college not found
+     *         - 500 Internal Server Error: If unexpected error occurs
+     */
+    @PostMapping
+    public ResponseEntity<ApiResponse<TeacherEntityDto>> createTeacher(
+            @Valid @RequestBody CreateTeacherRequestDto request) {
+        try {
+            log.info("Creating new teacher: {}", request.getEmployeeId());
+            TeacherEntityDto createdTeacher = teacherServices.createTeacher(request);
+
+            log.info("Successfully created teacher with ID: {}", createdTeacher.getTeacherId());
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    ApiResponse.ok(createdTeacher, "Teacher created successfully"));
+        } catch (Exception e) {
+            log.error("Error creating teacher", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ApiResponse.error("Failed to create teacher", e.getMessage()));
         }
     }
 }
