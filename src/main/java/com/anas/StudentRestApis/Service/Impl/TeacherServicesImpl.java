@@ -10,7 +10,6 @@ import com.anas.StudentRestApis.Repository.CollegeRepository;
 import com.anas.StudentRestApis.Repository.TeacherRepository;
 import com.anas.StudentRestApis.Service.TeacherServices;
 import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -21,7 +20,6 @@ import java.util.List;
 /**
  * Service for teacher data operations
  */
-@Slf4j
 @Service
 @AllArgsConstructor
 public class TeacherServicesImpl implements TeacherServices {
@@ -128,7 +126,6 @@ public class TeacherServicesImpl implements TeacherServices {
     @Override
     @Transactional
     public TeacherEntityDto updateTeacher(long id, UpdateTeacherRequestDto request) {
-        log.info("Fetch teacher with id: " + id);
         // Fetch teacher by ID, throw 404 if not found
         TeacherEntity teacher = teacherRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with ID: " + id));

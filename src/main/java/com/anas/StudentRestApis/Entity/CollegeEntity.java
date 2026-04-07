@@ -48,7 +48,7 @@ public class CollegeEntity {
     @JsonIgnoreProperties("college")
     private List<CourseEntity> courses;
 
-    @OneToMany(mappedBy = "college")
+    @OneToMany(mappedBy = "college", cascade = CascadeType.PERSIST)
     @JsonIgnoreProperties("college")
     private List<TeacherEntity> teachers;
 }
