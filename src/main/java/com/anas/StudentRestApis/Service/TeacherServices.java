@@ -18,7 +18,17 @@ public interface TeacherServices {
     TeacherEntityDto createTeacher(CreateTeacherRequestDto createTeacherRequestDto);
 
     /**
+     * Get a teacher by ID
+     */
+    TeacherEntityDto getTeacherById(long id);
+
+    /**
      * Update a teacher by teacherId
      */
     TeacherEntityDto updateTeacher(long id, UpdateTeacherRequestDto updateTeacherRequestDto);
+
+    /**
+     * Delete a teacher by teacherId
+     */
+    void deleteTeacherById(long id);
 }

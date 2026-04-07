@@ -10,6 +10,8 @@ import com.anas.StudentRestApis.Repository.CollegeRepository;
 import com.anas.StudentRestApis.Repository.TeacherRepository;
 import com.anas.StudentRestApis.Service.TeacherServices;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +21,7 @@ import java.util.List;
 /**
  * Service for teacher data operations
  */
+@Slf4j
 @Service
 @AllArgsConstructor
 public class TeacherServicesImpl implements TeacherServices {
@@ -63,6 +66,7 @@ public class TeacherServicesImpl implements TeacherServices {
     @Override
     @Transactional
     public TeacherEntityDto createTeacher(CreateTeacherRequestDto request) {
+
         // Fetch college by ID, throw 404 if not found
         var college = collegeRepository.findById(request.getCollegeId())
                 .orElseThrow(
@@ -91,11 +95,40 @@ public class TeacherServicesImpl implements TeacherServices {
     }
 
     /**
+     * Get teacher by ID with college and course details
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public TeacherEntityDto getTeacherById(long id) {
+        TeacherEntity teacher = teacherRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with ID: " + id));
+
+        // Map to DTO with full details
+        TeacherEntityDto dto = modelMapper.map(teacher, TeacherEntityDto.class);
+
+        if (teacher.getCollege() != null) {
+            dto.setCollegeId(teacher.getCollege().getCollegeId());
+            dto.setCollegeName(teacher.getCollege().getCollegeName());
+        }
+
+        if (teacher.getCourses() != null && !teacher.getCourses().isEmpty()) {
+            dto.setCourseNames(teacher.getCourses().stream()
+                    .map(CourseEntity::getCourseName)
+                    .toList());
+        } else {
+            dto.setCourseNames(List.of());
+        }
+
+        return dto;
+    }
+
+    /**
      * Update teacher by ID
      */
     @Override
     @Transactional
     public TeacherEntityDto updateTeacher(long id, UpdateTeacherRequestDto request) {
+        log.info("Fetch teacher with id: " + id);
         // Fetch teacher by ID, throw 404 if not found
         TeacherEntity teacher = teacherRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with ID: " + id));
@@ -141,5 +174,19 @@ public class TeacherServicesImpl implements TeacherServices {
         }
 
         return dto;
+    }
+
+    /**
+     * Delete teacher by ID (soft delete - sets isActive to false)
+     */
+    @Override
+    @Transactional
+    public void deleteTeacherById(long id) {
+        TeacherEntity teacher = teacherRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with ID: " + id));
+
+        // Soft delete - mark as inactive
+        teacher.setIsActive(false);
+        teacherRepository.save(teacher);
     }
 }
