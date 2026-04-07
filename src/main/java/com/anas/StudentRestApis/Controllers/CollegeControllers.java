@@ -2,15 +2,13 @@ package com.anas.StudentRestApis.Controllers;
 
 import com.anas.StudentRestApis.Common.ApiResponse;
 import com.anas.StudentRestApis.Dto.CollegeEntityDto;
-import com.anas.StudentRestApis.Exception.ResourceNotFoundException;
 import com.anas.StudentRestApis.Service.CollegeServices;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -30,25 +28,27 @@ public class CollegeControllers {
      *
      * @return ResponseEntity with:
      *         - 200 OK: List of colleges with full details
-     *         - 204 No Content: If no college found
+     *         - 204 No Content: If no colleges found
      *         - 500 Internal Server Error: If unexpected error occurs
      */
     @GetMapping
-    public ApiResponse<CollegeEntityDto> getAllColleges(){
-        try{
-            log.info("Fetching colleges");
+    public ResponseEntity<ApiResponse<List<CollegeEntityDto>>> getAllColleges() {
+        try {
+            log.info("Fetching all colleges");
             List<CollegeEntityDto> colleges = collegeServices.getAllColleges();
 
-            if(colleges.isEmpty()){
-                throw new ResourceNotFoundException("Colleges not found");
+            if (colleges.isEmpty()) {
+                log.info("No colleges found");
+                return ResponseEntity.noContent().build();
             }
 
-            log.info("Successfully fetched {} active teachers", colleges.size());
-            return ApiResponse.ok((CollegeEntityDto) colleges, "Teachers fetched successfully");
-        }catch(Exception e){
-            log.info("Error fetching colleges", e);
-            return ApiResponse.error("Failed to fetch colleges", e.getMessage());
-//            esponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+            log.info("Successfully fetched {} colleges", colleges.size());
+            return ResponseEntity.ok(
+                    ApiResponse.ok(colleges, "Colleges fetched successfully"));
+        } catch (Exception e) {
+            log.error("Error fetching colleges", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    ApiResponse.error("Failed to fetch colleges", e.getMessage()));
         }
     }
 }
