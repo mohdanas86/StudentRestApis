@@ -10,6 +10,7 @@ import com.anas.StudentRestApis.Repository.CollegeRepository;
 import com.anas.StudentRestApis.Repository.TeacherRepository;
 import com.anas.StudentRestApis.Service.TeacherServices;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import java.util.List;
 /**
  * Service for teacher data operations
  */
+@Slf4j
 @Service
 @AllArgsConstructor
 public class TeacherServicesImpl implements TeacherServices {

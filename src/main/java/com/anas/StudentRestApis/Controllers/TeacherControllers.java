@@ -50,7 +50,7 @@ public class TeacherControllers {
         } catch (Exception e) {
             log.error("Error fetching teachers", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ApiResponse.error("Failed to fetch teachers", e.getMessage()));
+                    ApiResponse.error("Failed to fetch teachers", "An error occurred while fetching teachers"));
         }
     }
 
@@ -76,7 +76,7 @@ public class TeacherControllers {
         } catch (Exception e) {
             log.error("Error creating teacher", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ApiResponse.error("Failed to create teacher", e.getMessage()));
+                    ApiResponse.error("Failed to create teacher", "An error occurred while creating teacher"));
         }
     }
 
@@ -100,7 +100,7 @@ public class TeacherControllers {
         } catch (Exception e) {
             log.error("Error fetching teacher with ID: {}", id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ApiResponse.error("Failed to fetch teacher", e.getMessage()));
+                    ApiResponse.error("Failed to fetch teacher", "An error occurred while fetching teacher"));
         }
     }
 
@@ -128,7 +128,7 @@ public class TeacherControllers {
         } catch (Exception e) {
             log.error("Error updating teacher with ID: {}", id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ApiResponse.error("Failed to update teacher", e.getMessage()));
+                    ApiResponse.error("Failed to update teacher", "An error occurred while updating teacher"));
         }
     }
 
@@ -153,7 +153,7 @@ public class TeacherControllers {
         } catch (Exception e) {
             log.error("Error deleting teacher with ID: {}", id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
-                    ApiResponse.error("Failed to delete teacher", e.getMessage()));
+                    ApiResponse.error("Failed to delete teacher", "An error occurred while deleting teacher"));
         }
     }
 }
