@@ -7,8 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO for UpdateCollegeRequestDto - Contains college information for updating a
- * college
+ * DTO for UpdateCollegeRequestDto - Contains college information for updating a college
  */
 @Data
 @Builder
