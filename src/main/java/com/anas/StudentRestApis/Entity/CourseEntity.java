@@ -34,7 +34,7 @@ public class CourseEntity {
     private String courseName;
 
     @Column
-    private String credits;
+    private double credits;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
