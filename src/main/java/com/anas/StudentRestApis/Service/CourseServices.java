@@ -1,4 +1,12 @@
 package com.anas.StudentRestApis.Service;
 
-public class CourseServices {
+import com.anas.StudentRestApis.Dto.CourseEntityDto;
+
+import java.util.List;
+
+public interface CourseServices {
+    /**
+     * Retrieves all courses
+     */
+    List<CourseEntityDto> getAllCourses();
 }
