@@ -8,7 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO for UpdateCourseRequestDto - Contains course information for updating a course
+ * DTO for UpdateCourseRequestDto - Contains course information for updating a
+ * course
  */
 @Data
 @Builder
@@ -24,4 +25,6 @@ public class UpdateCourseRequestDto {
 
     @DecimalMin("0.0")
     private double credits;
+
+    private Long collegeId;
 }

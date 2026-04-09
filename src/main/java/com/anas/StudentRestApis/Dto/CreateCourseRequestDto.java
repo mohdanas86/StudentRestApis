@@ -2,13 +2,15 @@ package com.anas.StudentRestApis.Dto;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * DTO for CreateCourseRequestDto - Contains courses information to create a new course
+ * DTO for CreateCourseRequestDto - Contains courses information to create a new
+ * course
  */
 @Data
 @Builder
@@ -24,4 +26,7 @@ public class CreateCourseRequestDto {
 
     @DecimalMin("0.0")
     private double credits;
+
+    @NotNull(message = "College ID is required")
+    private Long collegeId;
 }
