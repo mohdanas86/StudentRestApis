@@ -54,7 +54,7 @@ public class TeacherEntity {
     private CollegeEntity college;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
-    private Boolean isActive = true;
+    private Boolean isActive;
 
     @CreationTimestamp
     @Column(nullable = false, updatable = false)
