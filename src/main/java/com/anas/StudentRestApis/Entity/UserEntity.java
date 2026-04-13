@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -21,15 +22,12 @@ import java.time.LocalDateTime;
  * - Active status for soft deletion
  */
 @Entity
-@Table(
-        name = "users",
-        indexes = {
-                @Index(name = "idx_users_email", columnList = "email"),
-                @Index(name = "idx_users_username", columnList = "username"),
-                @Index(name = "idx_users_role", columnList = "role"),
-                @Index(name = "idx_users_is_active", columnList = "is_active")
-        }
-)
+@Table(name = "users", indexes = {
+        @Index(name = "idx_users_email", columnList = "email"),
+        @Index(name = "idx_users_username", columnList = "username"),
+        @Index(name = "idx_users_role", columnList = "role"),
+        @Index(name = "idx_users_is_active", columnList = "is_active")
+})
 @Data
 @Builder
 @AllArgsConstructor
@@ -53,9 +51,9 @@ public class UserEntity {
      * - Never expose in API responses
      * - Never log in plain text
      */
-    @Column(nullable = false, length = 255)
+    @Column(name = "password_hash", nullable = false, length = 255)
     @JsonIgnore
-    private String password;
+    private String passwordHash;
 
     // ==================== Authorization ====================
     @Column(nullable = false)
@@ -73,12 +71,7 @@ public class UserEntity {
      * - Nullable and unique to maintain 1-to-1 relationship
      */
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(
-            name = "teacher_id",
-            unique = true,
-            nullable = false,
-            foreignKey = @ForeignKey(name = "fk_user_teacher")
-    )
+    @JoinColumn(name = "teacher_id", unique = true, nullable = true, foreignKey = @ForeignKey(name = "fk_user_teacher"))
     private TeacherEntity teacher;
 
     // ==================== Audit Fields ====================
@@ -86,7 +79,7 @@ public class UserEntity {
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @CreationTimestamp
+    @UpdateTimestamp
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
@@ -95,16 +88,16 @@ public class UserEntity {
     /**
      * Check if user has a specific role
      */
-    public boolean hasRole(Role reuiredRole){
-        return this.role == reuiredRole;
+    public boolean hasRole(Role requiredRole) {
+        return this.role == requiredRole;
     }
 
     /**
      * Check if user has any of the specified roles
      */
-    public boolean hashAnyRole(Role... roles){
-        for(Role role: roles){
-            if(this.role == role){
+    public boolean hasAnyRole(Role... roles) {
+        for (Role role : roles) {
+            if (this.role == role) {
                 return true;
             }
         }
@@ -114,21 +107,21 @@ public class UserEntity {
     /**
      * Check if user can be deleted (only inactive users)
      */
-    public boolean canBeDeleted(){
+    public boolean canBeDeleted() {
         return !this.isActive;
     }
 
     /**
      * Soft delete - mark as inactive instead of hard delete
      */
-    public void deactivate(){
+    public void deactivate() {
         this.isActive = false;
     }
 
     /**
      * Reactivate user account
      */
-    public void activate(){
+    public void activate() {
         this.isActive = true;
     }
 
