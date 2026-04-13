@@ -44,7 +44,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     @Query("SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END FROM UserEntity u WHERE LOWER(u.email) = LOWER(:email)")
     boolean existsByEmailIgnoreCase(@Param("email") String email);
 
-
     // ==================== Role-Based Queries ====================
 
     /**
@@ -67,7 +66,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
      */
     long countByRoleAndIsActiveTrue(Role role);
 
-
     // ==================== Active Status Queries ====================
 
     /**
@@ -82,17 +80,18 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     /**
      * Find all active teachers (users with TEACHER role who are active)
+     * Uses JPQL with enum comparison - Hibernate handles enum string conversion
      */
-    @Query("SELECT u FROM UserEntity u WHERE u.role = 'TEACHER' AND u.isActive = true")
+    @Query("SELECT u FROM UserEntity u WHERE u.role = com.anas.StudentRestApis.Entity.Role.TEACHER AND u.isActive = true")
     List<UserEntity> findActiveTeachers();
-
 
     // ==================== Teacher Relationship Queries ====================
 
     /**
      * Find user by associated teacher ID
+     * Uses nested path: teacher_teacherId to traverse the OneToOne relationship
      */
-    Optional<UserEntity> findByTeacherId(Long teacherId);
+    Optional<UserEntity> findByTeacher_TeacherId(Long teacherId);
 
     /**
      * Find all users who are linked to teachers
@@ -100,17 +99,16 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     @Query("SELECT u FROM UserEntity u WHERE u.teacher IS NOT NULL")
     List<UserEntity> findAllTeacherUsers();
 
-
     // ==================== Search Queries ====================
 
     /**
      * Search users by username or email (case-insensitive)
      */
     @Query("""
-        SELECT u FROM UserEntity u 
-        WHERE LOWER(u.username) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
-           OR LOWER(u.email) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
-        ORDER BY u.createdAt DESC
-        """)
+            SELECT u FROM UserEntity u
+            WHERE LOWER(u.username) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
+               OR LOWER(u.email) LIKE LOWER(CONCAT('%', :searchTerm, '%'))
+            ORDER BY u.createdAt DESC
+            """)
     List<UserEntity> searchByUsernameOrEmail(@Param("searchTerm") String searchTerm);
 }
