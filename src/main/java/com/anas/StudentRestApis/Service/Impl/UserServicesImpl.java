@@ -39,27 +39,26 @@ public class UserServicesImpl implements UserServices {
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
 
-
     // ==================== Authentication ====================
     // register user
     @Override
     @Transactional
-    public UserEntityDto register(RegisterRequestDto request){
+    public UserEntityDto register(RegisterRequestDto request) {
         log.info("Registering new user: {}", request.getUsername());
 
-        if(userRepository.existsByEmailIgnoreCase(request.getEmail())){
+        if (userRepository.existsByEmailIgnoreCase(request.getEmail())) {
             log.warn("Registration failed: Email already exists: {}", request.getEmail());
             throw new DuplicateResourceException("Email already in use: " + request.getEmail());
         }
 
         // Validate username not already in use
-        if(userRepository.existsByUsernameIgnoreCase(request.getUsername())){
+        if (userRepository.existsByUsernameIgnoreCase(request.getUsername())) {
             log.warn("Registration failed: Username already exists: {}", request.getUsername());
             throw new DuplicateResourceException("Username already in use: " + request.getUsername());
         }
 
         // Prevent direct student registration (must use invitation system)
-        if(request.getRole() == Role.STUDENT){
+        if (request.getRole() == Role.STUDENT) {
             log.info("Registration failed: Direct STUDENT registration not allowed");
             throw new IllegalArgumentException("Student must be registered by administrators");
         }
@@ -76,6 +75,9 @@ public class UserServicesImpl implements UserServices {
 
         // Create new user
         UserEntity user = UserEntity.builder()
+                .email(request.getEmail())
+                .username(request.getUsername())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role(request.getRole())
                 .teacher(teacher)
                 .isActive(true)
@@ -89,25 +91,25 @@ public class UserServicesImpl implements UserServices {
     // login user
     @Override
     @Transactional
-    public LoginResponseDto login(LoginRequestDto request){
+    public LoginResponseDto login(LoginRequestDto request) {
         log.info("Login attempt for username: {}", request.getUsername());
 
         // Find user by username
         UserEntity user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(()-> {
+                .orElseThrow(() -> {
                     log.warn("Login failed: Username not found: {}", request.getUsername());
                     // Generic message to prevent username enumeration
                     throw new InvalidCredentialsException("Invalid username or password");
                 });
 
         // check if user is active
-        if(!user.isActive()){
+        if (!user.isActive()) {
             log.warn("Login failed: User inactive: {}", request.getUsername());
             throw new InvalidCredentialsException("User account is deactivated");
         }
 
         // verify password
-        if(!passwordEncoder.matches(request.getPassword(), user.getPassword())){
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             log.warn("Login failed: Invalid password for username: {}", request.getUsername());
             throw new InvalidCredentialsException("Invalid username or password");
         }
@@ -126,8 +128,7 @@ public class UserServicesImpl implements UserServices {
                                 .email(user.getEmail())
                                 .role(user.getRole())
                                 .createdAt(user.getCreatedAt())
-                                .build()
-                )
+                                .build())
                 .build();
     }
 
@@ -138,26 +139,26 @@ public class UserServicesImpl implements UserServices {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + username));
 
-        return passwordEncoder.matches(plainPassword, user.getPassword());
+        return passwordEncoder.matches(plainPassword, user.getPasswordHash());
     }
 
     // change password
     @Override
     @Transactional
-    public void changePassword(Long userId, String oldPassword, String newPassword){
+    public void changePassword(Long userId, String oldPassword, String newPassword) {
         log.info("Password change requested for user ID: {}", userId);
 
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(()->new ResourceNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         // verify old password
-        if(!passwordEncoder.matches(oldPassword, user.getPassword())){
+        if (!passwordEncoder.matches(oldPassword, user.getPasswordHash())) {
             log.warn("Password change failed: Invalid old password for user ID: {}", userId);
             throw new InvalidCredentialsException("Current password is incorrect");
         }
 
         // update password
-        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
         userRepository.save(user);
         log.info("Password changed successfully for user ID: {}", userId);
     }
@@ -166,7 +167,7 @@ public class UserServicesImpl implements UserServices {
     // get user by userId
     @Override
     @Transactional(readOnly = true)
-    public UserEntityDto getUserById(Long userId){
+    public UserEntityDto getUserById(Long userId) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
@@ -176,7 +177,7 @@ public class UserServicesImpl implements UserServices {
     // get user by username
     @Override
     @Transactional(readOnly = true)
-    public UserEntityDto getUserByUsername(String username){
+    public UserEntityDto getUserByUsername(String username) {
         UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with username: " + username));
 
@@ -186,7 +187,7 @@ public class UserServicesImpl implements UserServices {
     // get all users
     @Override
     @Transactional(readOnly = true)
-    public List<UserEntityDto> getAllUsers(Role role){
+    public List<UserEntityDto> getAllUsers(Role role) {
         List<UserEntity> users = role == null
                 ? userRepository.findAll()
                 : userRepository.findByRole(role);
@@ -199,7 +200,7 @@ public class UserServicesImpl implements UserServices {
     // get all active users
     @Override
     @Transactional(readOnly = true)
-    public List<UserEntityDto> getActiveUsers(){
+    public List<UserEntityDto> getActiveUsers() {
         return userRepository.findByIsActiveTrue()
                 .stream()
                 .map(user -> modelMapper.map(user, UserEntityDto.class))
@@ -209,16 +210,16 @@ public class UserServicesImpl implements UserServices {
     // update user
     @Override
     @Transactional
-    public UserEntityDto updateUser(Long userId, UpdateUserRequestDto request){
+    public UserEntityDto updateUser(Long userId, UpdateUserRequestDto request) {
         log.info("Updating user ID: {}", userId);
 
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(()-> new ResourceNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         // update email id provided
-        if(request.getEmail() != null && !request.getEmail().equals(user.getEmail())){
-            if(userRepository.existsByEmailIgnoreCase(request.getEmail())){
-                throw new DuplicateResourceException("Email already in user");
+        if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
+            if (userRepository.existsByEmailIgnoreCase(request.getEmail())) {
+                throw new DuplicateResourceException("Email already in use");
             }
             user.setEmail(request.getEmail());
         }
@@ -262,30 +263,30 @@ public class UserServicesImpl implements UserServices {
     // deleted user
     @Override
     @Transactional
-    public void deleteUser(Long userId){
+    public void deleteUser(Long userId) {
         log.info("Hard deleting user ID: {}", userId);
 
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(()-> new ResourceNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
-        if(user.isActive()){
+        if (user.isActive()) {
             log.warn("Cannot delete active user: ID {}", userId);
             throw new IllegalArgumentException("Cannot delete active user, Deactivate first");
         }
 
         userRepository.delete(user);
-        log.warn("User deleted user: ID {}", userId);
+        log.warn("User hard deleted: ID {}", userId);
     }
 
     // ==================== Role Management ====================
     // update user role
     @Override
     @Transactional
-    public void updateUserRole(Long userId, Role newRole){
-        log.info("Updating role user role: {}", userId);
+    public void updateUserRole(Long userId, Role newRole) {
+        log.info("Updating user role for user ID: {}", userId);
 
         UserEntity user = userRepository.findById(userId)
-                .orElseThrow(()-> new ResourceNotFoundException("User not found with id: " + userId));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
 
         user.setRole(newRole);
         userRepository.save(user);
@@ -295,7 +296,7 @@ public class UserServicesImpl implements UserServices {
     // get user by role
     @Override
     @Transactional(readOnly = true)
-    public List<UserEntityDto> getUserByRole(Role role){
+    public List<UserEntityDto> getUserByRole(Role role) {
         return userRepository.findByRole(role)
                 .stream()
                 .map(user -> modelMapper.map(user, UserEntityDto.class))
@@ -305,7 +306,7 @@ public class UserServicesImpl implements UserServices {
     // user by role
     @Override
     @Transactional(readOnly = true)
-    public long countUserByRole(Role role){
+    public long countUserByRole(Role role) {
         return userRepository.countByRole(role);
     }
 
@@ -313,17 +314,17 @@ public class UserServicesImpl implements UserServices {
     // search user
     @Override
     @Transactional(readOnly = true)
-    public List<UserEntityDto> searchUsers(String searchTerm){
+    public List<UserEntityDto> searchUsers(String searchTerm) {
         return userRepository.searchByUsernameOrEmail(searchTerm)
                 .stream()
-                .map(user->modelMapper.map(user, UserEntityDto.class))
+                .map(user -> modelMapper.map(user, UserEntityDto.class))
                 .toList();
     }
 
     // check user username is available or not
     @Override
     @Transactional(readOnly = true)
-    public boolean isUsernameAvailable(String username){
+    public boolean isUsernameAvailable(String username) {
         return !userRepository.existsByUsernameIgnoreCase(username);
     }
 
@@ -331,15 +332,15 @@ public class UserServicesImpl implements UserServices {
 
     @Override
     @Transactional(readOnly = true)
-    public boolean isEmailAvailable(String email){
+    public boolean isEmailAvailable(String email) {
         return !userRepository.existsByEmailIgnoreCase(email);
     }
 
     // get user entity by username
     @Override
     @Transactional(readOnly = true)
-    public UserEntity getUserEntityByUsername(String username){
+    public UserEntity getUserEntityByUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(()->new ResourceNotFoundException("User with this username not found: " + username));
+                .orElseThrow(() -> new ResourceNotFoundException("User with this username not found: " + username));
     }
 }
