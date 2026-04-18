@@ -15,7 +15,8 @@ import java.util.Date;
  *
  * Design Notes:
  * - Symmetric signing (HS512) - same secret for signing and verification
- * - Claims include: username, userId, role, email, and standard claims (iat, exp)
+ * - Claims include: username, userId, role, email, and standard claims (iat,
+ * exp)
  * - Token validation checks signature and expiration
  * - Exceptions are caught and logged (never throw to caller)
  */
@@ -44,12 +45,12 @@ public class JwtTokenProvider {
      * Generate JWT token for user
      *
      * @param username User's username
-     * @param userId User's ID
-     * @param role User's role
-     * @param email User's email
+     * @param userId   User's ID
+     * @param role     User's role
+     * @param email    User's email
      * @return Signed JWT token
      */
-    public String generateToken(String username, Long userId, String role, String email){
+    public String generateToken(String username, Long userId, String role, String email) {
         return buildToken(username, userId, role, email, Long.parseLong(jwtExpiration));
     }
 
@@ -57,10 +58,10 @@ public class JwtTokenProvider {
      * Generate refresh token with longer expiration
      *
      * @param username User's username
-     * @param userId User's ID
+     * @param userId   User's ID
      * @return Signed refresh JWT token
      */
-    public String generateRefreshToken(String username, Long userId){
+    public String generateRefreshToken(String username, Long userId) {
         return Jwts.builder()
                 .subject(username)
                 .claim("userId", userId)
@@ -75,7 +76,7 @@ public class JwtTokenProvider {
     /**
      * Internal method to build token with claims
      */
-    private String buildToken(String username, Long userId, String role, String email, long expirationTime){
+    private String buildToken(String username, Long userId, String role, String email, long expirationTime) {
         long now = System.currentTimeMillis();
         long expiryDate = now + expirationTime;
 
@@ -105,8 +106,8 @@ public class JwtTokenProvider {
      * @param token JWT token to validate
      * @return true if valid, false otherwise
      */
-    public boolean validateToken(String token){
-        try{
+    public boolean validateToken(String token) {
+        try {
             Jwts.parser()
                     .setSigningKey(getSigningKey())
                     .build()
@@ -142,23 +143,23 @@ public class JwtTokenProvider {
     /**
      * Check if token is expired
      */
-    public boolean isTokenExpired(String token){
-        try{
+    public boolean isTokenExpired(String token) {
+        try {
             Claims claims = getAllClaimsFromToken(token);
             return claims.getExpiration().before(new Date());
         } catch (ExpiredJwtException e) {
             return true;
         } catch (Exception e) {
             log.warn("Error checking token expiration: {}", e.getMessage());
-            return true;  // Assume expired on error
+            return true; // Assume expired on error
         }
     }
 
     /**
      * Get time remaining until token expiration (in seconds)
      */
-    public long getTimeUntilExpiration(String token){
-        try{
+    public long getTimeUntilExpiration(String token) {
+        try {
             Claims claims = getAllClaimsFromToken(token);
             return (claims.getExpiration().getTime() - System.currentTimeMillis()) - 1000;
         } catch (Exception e) {
@@ -172,29 +173,29 @@ public class JwtTokenProvider {
     /**
      * Extract username from token
      */
-    public String getUsernameFromToken(String token){
+    public String getUsernameFromToken(String token) {
         return getAllClaimsFromToken(token).getSubject();
     }
 
     /**
      * Extract userId from token
      */
-    public Long getUserIdFromToken(String token){
+    public Long getUserIdFromToken(String token) {
         return getAllClaimsFromToken(token).get("userId", Long.class);
     }
 
     /**
      * Extract role from token
      */
-    public String getRoleFromToken(String token){
+    public String getRoleFromToken(String token) {
         return getAllClaimsFromToken(token).get("role", String.class);
     }
 
     /**
      * Extract email from token
      */
-    public String getEmailFromToken(String token){
-        return getAllClaimsFromToken(token).get("Email", String.class);
+    public String getEmailFromToken(String token) {
+        return getAllClaimsFromToken(token).get("email", String.class);
     }
 
     /**
@@ -203,7 +204,7 @@ public class JwtTokenProvider {
      * NOTE: This will throw ExpiredJwtException if token is expired
      * Use validateToken() first to check expiration safely
      */
-    private Claims getAllClaimsFromToken(String token){
+    private Claims getAllClaimsFromToken(String token) {
         return Jwts.parser()
                 .setSigningKey(getSigningKey())
                 .build()
@@ -219,9 +220,9 @@ public class JwtTokenProvider {
      * HMAC256 requires minimum 256 bits (32 bytes)
      * HS512 requires minimum 512 bits (64 bytes)
      */
-    private SecretKey getSigningKey(){
+    private SecretKey getSigningKey() {
         byte[] keyBytes = jwtSecret.getBytes();
-        if(keyBytes.length > 64){
+        if (keyBytes.length > 64) {
             log.warn("JWT secret is less than 64 bytes. HS512 requires minimum 512 bits!");
         }
         return Keys.hmacShaKeyFor(keyBytes);
@@ -232,18 +233,18 @@ public class JwtTokenProvider {
      *
      * Expected format: "Bearer <token>"
      */
-    public String extractTokenFromBearer(String bearerToken){
-        if(bearerToken != null && bearerToken.startsWith("Bearer ")){
+    public String extractTokenFromBearer(String bearerToken) {
+        if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
-        return  null;
+        return null;
     }
 
     /**
      * Get token expiration time as Date
      */
-    public Date getTokenExpirationDate(String token){
-        try{
+    public Date getTokenExpirationDate(String token) {
+        try {
             return getAllClaimsFromToken(token).getExpiration();
         } catch (Exception e) {
             log.warn("Could not get token expiration date: {}", e.getMessage());
