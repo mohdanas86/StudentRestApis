@@ -68,8 +68,8 @@ public class JwtTokenProvider {
                 .claim("type", "refresh")
                 .issuer(issuer)
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + jwtRefreshExpiration))
-                .signWith(getSigningKey(), SignatureAlgorithm.ES512)
+                .expiration(new Date(System.currentTimeMillis() + Long.parseLong(jwtRefreshExpiration)))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
                 .compact();
     }
 
@@ -89,7 +89,7 @@ public class JwtTokenProvider {
                 .audience().add(audience).and()
                 .issuedAt(new Date(now))
                 .expiration(new Date(expiryDate))
-                .signWith(getSigningKey(), SignatureAlgorithm.ES512)
+                .signWith(getSigningKey(), SignatureAlgorithm.HS512)
                 .compact();
     }
 
@@ -222,8 +222,9 @@ public class JwtTokenProvider {
      */
     private SecretKey getSigningKey() {
         byte[] keyBytes = jwtSecret.getBytes();
-        if (keyBytes.length > 64) {
-            log.warn("JWT secret is less than 64 bytes. HS512 requires minimum 512 bits!");
+        if (keyBytes.length < 64) {
+            log.warn("JWT secret is less than 64 bytes ({}). HS512 requires minimum 512 bits (64 bytes)!",
+                    keyBytes.length);
         }
         return Keys.hmacShaKeyFor(keyBytes);
     }
