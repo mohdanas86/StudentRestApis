@@ -16,6 +16,10 @@ public class ModelMapperConfig {
     public ModelMapper modelMapper() {
         ModelMapper mapper = new ModelMapper();
 
+        // Ignore ambiguous mappings - prefer first match
+        // This resolves the conflict between teacherId and employeeId properties
+        mapper.getConfiguration().setAmbiguityIgnored(true);
+
         // Configure TeacherEntity -> TeacherEntityDto mapping
         // Skip college-related fields (manually set in service)
         mapper.addMappings(new PropertyMap<TeacherEntity, TeacherEntityDto>() {
