@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,6 +37,7 @@ public class CourseControllers {
      *         - 500 Internal Server Error: If unexpected error occurs
      */
     @GetMapping
+    @PreAuthorize("permitAll()")
     public ResponseEntity<ApiResponse<List<CourseEntityDto>>> getAllCourses() {
         try {
             log.info("Fetching courses");
@@ -61,6 +63,7 @@ public class CourseControllers {
      *         - 500 Internal Server Error: If unexpected error occurs
      */
     @GetMapping("/{courseId}")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<ApiResponse<CourseEntityDto>> getCourseByCourseId(@PathVariable long courseId) {
         try {
             log.info("Fetching course");
@@ -89,6 +92,7 @@ public class CourseControllers {
      *         - 500 Internal Server Error: If unexpected error occurs
      */
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<ApiResponse<CourseEntityDto>> createCourse(
             @Valid @RequestBody CreateCourseRequestDto request) {
         try {
@@ -124,6 +128,7 @@ public class CourseControllers {
      *         - 500 Internal Server Error: If unexpected error occurs
      */
     @PutMapping("/{courseId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<ApiResponse<CourseEntityDto>> updateCourseByCourseId(
             @PathVariable long courseId,
             @Valid @RequestBody UpdateCourseRequestDto request) {
@@ -154,6 +159,7 @@ public class CourseControllers {
      *         - 500 Internal Server Error: If unexpected error occurs
      */
     @DeleteMapping("/{courseId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<String>> deleteCourseById(@PathVariable long courseId) {
         try {
             log.info("Deleting course");

@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,6 +35,7 @@ public class TeacherControllers {
      *         - 500 Internal Server Error: If unexpected error occurs
      */
     @GetMapping
+    @PreAuthorize("permitAll()")
     public ResponseEntity<ApiResponse<List<TeacherEntityDto>>> getTeachers() {
         try {
             log.info("Fetching all active teachers");
@@ -64,6 +66,7 @@ public class TeacherControllers {
      *         - 500 Internal Server Error: If unexpected error occurs
      */
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<TeacherEntityDto>> createTeacher(
             @Valid @RequestBody CreateTeacherRequestDto request) {
         try {
@@ -90,6 +93,7 @@ public class TeacherControllers {
      *         - 500 Internal Server Error: If unexpected error occurs
      */
     @GetMapping("/{id}")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<ApiResponse<TeacherEntityDto>> getTeacherById(@PathVariable long id) {
         try {
             log.info("Fetching teacher with ID: {}", id);
@@ -116,6 +120,7 @@ public class TeacherControllers {
      *         - 500 Internal Server Error: If unexpected error occurs
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<TeacherEntityDto>> updateTeacher(
             @PathVariable long id,
             @Valid @RequestBody UpdateTeacherRequestDto request) {
@@ -143,6 +148,7 @@ public class TeacherControllers {
      *         - 500 Internal Server Error: If unexpected error occurs
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<String>> deleteTeacherById(@PathVariable long id) {
         try {
             log.info("Deleting teacher with ID: {}", id);

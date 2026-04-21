@@ -10,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -34,6 +35,7 @@ public class CollegeControllers {
      *         - 500 Internal Server Error: If unexpected error occurs
      */
     @GetMapping
+    @PreAuthorize("permitAll()")
     public ResponseEntity<ApiResponse<List<CollegeEntityDto>>> getAllColleges() {
         try {
             log.info("Fetching all colleges");
@@ -63,6 +65,7 @@ public class CollegeControllers {
      *         - 500 Internal Server Error: If unexpected error occurs
      */
     @GetMapping("/{collegeId}")
+    @PreAuthorize("permitAll()")
     public ResponseEntity<ApiResponse<CollegeEntityDto>> getCollegeById(@PathVariable long collegeId) {
         try {
             log.info("Fetching college by ID: {}", collegeId);
@@ -87,6 +90,7 @@ public class CollegeControllers {
      *         - 500 Internal Server Error: If unexpected error occurs
      */
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<CollegeEntityDto>> createCollege(
             @Valid @RequestBody CreateCollegeRequestDto request) {
         try {
@@ -115,6 +119,7 @@ public class CollegeControllers {
      *         - 500 Internal Server Error: If unexpected error occurs
      */
     @PutMapping("/{collegeId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<CollegeEntityDto>> updateCollegeById(
             @PathVariable long collegeId,
             @Valid @RequestBody UpdateCollegeRequestDto request) {
@@ -142,6 +147,7 @@ public class CollegeControllers {
      *         - 500 Internal Server Error: If unexpected error occurs
      */
     @DeleteMapping("/{collegeId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ApiResponse<String>> deleteCollege(@PathVariable long collegeId) {
         try {
             log.info("Deleting college: {}", collegeId);
