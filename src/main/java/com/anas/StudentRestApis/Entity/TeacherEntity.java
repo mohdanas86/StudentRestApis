@@ -49,8 +49,12 @@ public class TeacherEntity {
     @Column
     private String specialization;
 
+    /**
+     * College reference - can be NULL when teacher is unassigned
+     * Allows teacher to remain in system when college is deleted
+     */
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "college_id", nullable = false)
+    @JoinColumn(name = "college_id", nullable = true)
     private CollegeEntity college;
 
     @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT true")

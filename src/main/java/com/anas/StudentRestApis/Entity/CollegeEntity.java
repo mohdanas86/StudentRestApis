@@ -48,6 +48,11 @@ public class CollegeEntity {
     @JsonIgnoreProperties("college")
     private List<CourseEntity> courses;
 
+    /**
+     * Teachers in this college - cascade PERSIST only (not DELETE)
+     * When college is deleted, teachers are preserved with NULL college_id
+     * This allows teachers to be reassigned to other colleges later
+     */
     @OneToMany(mappedBy = "college", cascade = CascadeType.PERSIST)
     @JsonIgnoreProperties("college")
     private List<TeacherEntity> teachers;

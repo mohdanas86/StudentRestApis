@@ -108,12 +108,19 @@ public class CollegeServicesImpl implements CollegeServices {
 
     /**
      * Delete a college by collegeId
+     * Note: Teachers are preserved with NULL college_id for future reassignment
      */
     @Override
     @Transactional
     public void deleteCollegeByCollegeId(long collegeId) {
         CollegeEntity college = collegeRepository.findById(collegeId)
                 .orElseThrow(() -> new ResourceNotFoundException("College not found with ID: " + collegeId));
+
+        // Orphan all teachers - set their college to null instead of deleting them
+        if (college.getTeachers() != null && !college.getTeachers().isEmpty()) {
+            college.getTeachers().forEach(teacher -> teacher.setCollege(null));
+            log.info("Orphaned {} teachers from college {}", college.getTeachers().size(), collegeId);
+        }
 
         collegeRepository.deleteById(collegeId);
     }
