@@ -37,12 +37,12 @@ Registers a new user in the system. Users can register with ADMIN or TEACHER rol
 ```
 
 ### Request Fields
-| Field    | Type   | Required | Validation                                           | Description                |
-| -------- | ------ | -------- | ---------------------------------------------------- | -------------------------- |
-| username | String | Yes      | 3-50 chars, unique, alphanumeric + underscore       | Unique login username      |
-| email    | String | Yes      | Valid email format, unique                          | User email address         |
+| Field    | Type   | Required | Validation                                                               | Description                 |
+| -------- | ------ | -------- | ------------------------------------------------------------------------ | --------------------------- |
+| username | String | Yes      | 3-50 chars, unique, alphanumeric + underscore                            | Unique login username       |
+| email    | String | Yes      | Valid email format, unique                                               | User email address          |
 | password | String | Yes      | Min 8 chars, 1 uppercase, 1 lowercase, 1 digit, 1 special char (@$!%*?&) | Strong password requirement |
-| role     | String | Yes      | ADMIN or TEACHER only                              | User role in system        |
+| role     | String | Yes      | ADMIN or TEACHER only                                                    | User role in system         |
 
 ### Response
 
@@ -103,11 +103,11 @@ Registers a new user in the system. Users can register with ADMIN or TEACHER rol
 ```
 
 ### Status Codes
-| Code | Description                                    |
-| ---- | ---------------------------------------------- |
-| 201  | User successfully registered                   |
-| 400  | Validation failed or duplicate resource        |
-| 500  | Server error while registering                 |
+| Code | Description                             |
+| ---- | --------------------------------------- |
+| 201  | User successfully registered            |
+| 400  | Validation failed or duplicate resource |
+| 500  | Server error while registering          |
 
 ### cURL Example
 ```bash
@@ -153,8 +153,8 @@ Authenticates a user and returns JWT access and refresh tokens. These tokens are
 ```
 
 ### Request Fields
-| Field    | Type   | Required | Description        |
-| -------- | ------ | -------- | ------------------ |
+| Field    | Type   | Required | Description         |
+| -------- | ------ | -------- | ------------------- |
 | username | String | Yes      | Registered username |
 | password | String | Yes      | User password       |
 
@@ -220,12 +220,12 @@ Authenticates a user and returns JWT access and refresh tokens. These tokens are
 | 500  | Server error during login             |
 
 ### Response Fields
-| Field        | Type   | Description                              |
-| ------------ | ------ | ---------------------------------------- |
-| accessToken  | String | JWT access token for API requests        |
-| refreshToken | String | JWT refresh token for obtaining new access token |
-| tokenType    | String | Always "Bearer" for JWT tokens           |
-| expiresIn    | Long   | Access token expiration time in seconds  |
+| Field        | Type   | Description                                             |
+| ------------ | ------ | ------------------------------------------------------- |
+| accessToken  | String | JWT access token for API requests                       |
+| refreshToken | String | JWT refresh token for obtaining new access token        |
+| tokenType    | String | Always "Bearer" for JWT tokens                          |
+| expiresIn    | Long   | Access token expiration time in seconds                 |
 | user         | Object | User details (userId, username, email, role, createdAt) |
 
 ### Token Usage
@@ -327,11 +327,11 @@ Generates a new access token using a valid refresh token. Refresh tokens have a 
 ```
 
 ### Status Codes
-| Code | Description                           |
-| ---- | ------------------------------------- |
-| 200  | New access token generated            |
-| 400  | Invalid or expired refresh token      |
-| 500  | Server error during token refresh     |
+| Code | Description                       |
+| ---- | --------------------------------- |
+| 200  | New access token generated        |
+| 400  | Invalid or expired refresh token  |
+| 500  | Server error during token refresh |
 
 ### cURL Example
 ```bash
@@ -373,8 +373,8 @@ Validates a JWT token without making any state changes. Useful for debugging and
 ```
 
 ### Request Fields
-| Field | Type   | Required | Description         |
-| ----- | ------ | -------- | ------------------- |
+| Field | Type   | Required | Description           |
+| ----- | ------ | -------- | --------------------- |
 | token | String | Yes      | JWT token to validate |
 
 ### Response
@@ -421,10 +421,10 @@ Validates a JWT token without making any state changes. Useful for debugging and
 ```
 
 ### Status Codes
-| Code | Description                  |
-| ---- | ---------------------------- |
-| 200  | Token validation completed   |
-| 400  | Token is invalid or expired  |
+| Code | Description                 |
+| ---- | --------------------------- |
+| 200  | Token validation completed  |
+| 400  | Token is invalid or expired |
 
 ### cURL Example
 ```bash
@@ -487,12 +487,12 @@ Signature: HMAC_SHA512(header.payload, secret)
 
 ## Password Requirements
 
-| Requirement | Details |
-| ----------- | ------- |
-| **Length** | 8-128 characters |
-| **Uppercase** | At least 1 uppercase letter (A-Z) |
-| **Lowercase** | At least 1 lowercase letter (a-z) |
-| **Digit** | At least 1 digit (0-9) |
+| Requirement      | Details                                |
+| ---------------- | -------------------------------------- |
+| **Length**       | 8-128 characters                       |
+| **Uppercase**    | At least 1 uppercase letter (A-Z)      |
+| **Lowercase**    | At least 1 lowercase letter (a-z)      |
+| **Digit**        | At least 1 digit (0-9)                 |
 | **Special char** | At least 1 special character (@$!%*?&) |
 
 ### Valid Password Examples
@@ -510,14 +510,14 @@ Signature: HMAC_SHA512(header.payload, secret)
 
 ## Common Errors
 
-| Error | Cause | Solution |
-| ----- | ----- | -------- |
-| Invalid username or password | Wrong credentials provided | Verify username/password or register new account |
-| Username already exists | Username taken | Choose a different username |
-| Student must be registered by administrators | Trying to register as STUDENT | Contact admin for student registration |
-| Invalid or expired refresh token | Refresh token is invalid/expired | Login again to get new tokens |
-| Token has expired | Access token expired | Use refresh token to get new access token |
-| JWT secret is invalid | Server configuration issue | Contact system administrator |
+| Error                                        | Cause                            | Solution                                         |
+| -------------------------------------------- | -------------------------------- | ------------------------------------------------ |
+| Invalid username or password                 | Wrong credentials provided       | Verify username/password or register new account |
+| Username already exists                      | Username taken                   | Choose a different username                      |
+| Student must be registered by administrators | Trying to register as STUDENT    | Contact admin for student registration           |
+| Invalid or expired refresh token             | Refresh token is invalid/expired | Login again to get new tokens                    |
+| Token has expired                            | Access token expired             | Use refresh token to get new access token        |
+| JWT secret is invalid                        | Server configuration issue       | Contact system administrator                     |
 
 ---
 
