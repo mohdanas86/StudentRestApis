@@ -4,6 +4,9 @@ import com.anas.StudentRestApis.Entity.CourseTeacherEntity;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -14,8 +17,8 @@ import java.util.Optional;
  *
  * Provides CRUD operations and custom queries for managing course-teacher
  * assignments.
- * Uses Spring Data JPA for automatic query generation based on method naming
- * conventions.
+ * Uses Spring Data JPA with custom @Query annotations to handle nested property
+ * references.
  *
  * Methods:
  * - findByCourseId: Retrieve all teachers assigned to a specific course
@@ -36,7 +39,8 @@ public interface CourseTeacherRepository extends JpaRepository<CourseTeacherEnti
      * @return List of CourseTeacherEntity records for the course. Empty list if no
      *         assignments.
      */
-    List<CourseTeacherEntity> findByCourseId(Long courseId);
+    @Query("SELECT ct FROM CourseTeacherEntity ct WHERE ct.course.courseId = :courseId")
+    List<CourseTeacherEntity> findByCourseId(@Param("courseId") Long courseId);
 
     /**
      * Find all courses assigned to a specific teacher.
@@ -45,7 +49,8 @@ public interface CourseTeacherRepository extends JpaRepository<CourseTeacherEnti
      * @return List of CourseTeacherEntity records for the teacher. Empty list if no
      *         assignments.
      */
-    List<CourseTeacherEntity> findByTeacherId(Long teacherId);
+    @Query("SELECT ct FROM CourseTeacherEntity ct WHERE ct.teacher.teacherId = :teacherId")
+    List<CourseTeacherEntity> findByTeacherId(@Param("teacherId") Long teacherId);
 
     /**
      * Find a specific course-teacher assignment.
@@ -54,7 +59,8 @@ public interface CourseTeacherRepository extends JpaRepository<CourseTeacherEnti
      * @param teacherId the ID of the teacher
      * @return Optional containing the assignment if it exists, empty otherwise
      */
-    Optional<CourseTeacherEntity> findByCourseIdAndTeacherId(Long courseId, Long teacherId);
+    @Query("SELECT ct FROM CourseTeacherEntity ct WHERE ct.course.courseId = :courseId AND ct.teacher.teacherId = :teacherId")
+    Optional<CourseTeacherEntity> findByCourseIdAndTeacherId(@Param("courseId") Long courseId, @Param("teacherId") Long teacherId);
 
     /**
      * Check if a teacher is assigned to a course (existence check).
@@ -63,7 +69,8 @@ public interface CourseTeacherRepository extends JpaRepository<CourseTeacherEnti
      * @param teacherId the ID of the teacher
      * @return true if assignment exists, false otherwise
      */
-    boolean existsByCourseIdAndTeacherId(Long courseId, Long teacherId);
+    @Query("SELECT COUNT(ct) > 0 FROM CourseTeacherEntity ct WHERE ct.course.courseId = :courseId AND ct.teacher.teacherId = :teacherId")
+    boolean existsByCourseIdAndTeacherId(@Param("courseId") Long courseId, @Param("teacherId") Long teacherId);
 
     /**
      * Count the number of teachers assigned to a course.
@@ -71,7 +78,8 @@ public interface CourseTeacherRepository extends JpaRepository<CourseTeacherEnti
      * @param courseId the ID of the course
      * @return the count of assigned teachers
      */
-    long countByCourseId(Long courseId);
+    @Query("SELECT COUNT(ct) FROM CourseTeacherEntity ct WHERE ct.course.courseId = :courseId")
+    long countByCourseId(@Param("courseId") Long courseId);
 
     /**
      * Count the number of courses assigned to a teacher.
@@ -79,7 +87,8 @@ public interface CourseTeacherRepository extends JpaRepository<CourseTeacherEnti
      * @param teacherId the ID of the teacher
      * @return the count of assigned courses
      */
-    long countByTeacherId(Long teacherId);
+    @Query("SELECT COUNT(ct) FROM CourseTeacherEntity ct WHERE ct.teacher.teacherId = :teacherId")
+    long countByTeacherId(@Param("teacherId") Long teacherId);
 
     /**
      * Delete a specific course-teacher assignment.
@@ -87,7 +96,9 @@ public interface CourseTeacherRepository extends JpaRepository<CourseTeacherEnti
      * @param courseId  the ID of the course
      * @param teacherId the ID of the teacher
      */
-    void deleteByCourseIdAndTeacherId(Long courseId, Long teacherId);
+    @Modifying
+    @Query("DELETE FROM CourseTeacherEntity ct WHERE ct.course.courseId = :courseId AND ct.teacher.teacherId = :teacherId")
+    void deleteByCourseIdAndTeacherId(@Param("courseId") Long courseId, @Param("teacherId") Long teacherId);
 
     /**
      * Find all teachers for a course with pagination support.
@@ -97,5 +108,6 @@ public interface CourseTeacherRepository extends JpaRepository<CourseTeacherEnti
      * @param pageable pagination information (page number, size, sorting)
      * @return Page of CourseTeacherEntity records
      */
-    Page<CourseTeacherEntity> findByCourseId(Long courseId, Pageable pageable);
+    @Query("SELECT ct FROM CourseTeacherEntity ct WHERE ct.course.courseId = :courseId")
+    Page<CourseTeacherEntity> findByCourseId(@Param("courseId") Long courseId, Pageable pageable);
 }

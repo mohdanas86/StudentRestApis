@@ -50,6 +50,7 @@ public class TeacherAssignmentDto {
     /** College name for display purposes */
     private String collegeName;
 
-    /** Timestamp when this teacher was assigned to the course */
+    /** Timestamp when teacher was assigned to this course */
     private LocalDateTime assignedAt;
+
 }

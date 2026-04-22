@@ -36,7 +36,7 @@ import java.util.Arrays;
 )
 public class SecurityConfig {
         @Bean
-        public MethodSecurityExpressionHandler methodSecurityExpressionHandler(){
+        public MethodSecurityExpressionHandler methodSecurityExpressionHandler() {
                 return new DefaultMethodSecurityExpressionHandler();
         }
 
@@ -71,6 +71,11 @@ public class SecurityConfig {
                                                                 "/swagger-ui/**",
                                                                 "/v3/api-docs/**",
                                                                 "/")
+                                                .permitAll()
+                                                // Public GET endpoints for courses and teachers
+                                                .requestMatchers(HttpMethod.GET, "/courses/**")
+                                                .permitAll()
+                                                .requestMatchers(HttpMethod.GET, "/teachers/**")
                                                 .permitAll()
                                                 // Admin-only endpoints
                                                 .requestMatchers("/admin/**")
