@@ -1,9 +1,11 @@
 package com.anas.StudentRestApis.Controllers;
 
 import com.anas.StudentRestApis.Common.ApiResponse;
+import com.anas.StudentRestApis.Dto.CoursesForTeacherDto;
 import com.anas.StudentRestApis.Dto.CreateTeacherRequestDto;
 import com.anas.StudentRestApis.Dto.TeacherEntityDto;
 import com.anas.StudentRestApis.Dto.UpdateTeacherRequestDto;
+import com.anas.StudentRestApis.Service.CourseTeacherServices;
 import com.anas.StudentRestApis.Service.TeacherServices;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -25,14 +27,15 @@ import java.util.List;
 public class TeacherControllers {
 
     private final TeacherServices teacherServices;
+    private final CourseTeacherServices courseTeacherServices;
 
     /**
      * GET /teachers - Retrieves all active teachers with their college and courses
-     * 
+     *
      * @return ResponseEntity with:
-     *         - 200 OK: List of active teachers with full details
-     *         - 204 No Content: If no active teachers found
-     *         - 500 Internal Server Error: If unexpected error occurs
+     * - 200 OK: List of active teachers with full details
+     * - 204 No Content: If no active teachers found
+     * - 500 Internal Server Error: If unexpected error occurs
      */
     @GetMapping
     @PreAuthorize("permitAll()")
@@ -58,12 +61,12 @@ public class TeacherControllers {
 
     /**
      * POST /teachers - Creates a new teacher
-     * 
+     *
      * @param request CreateTeacherRequestDto with teacher details
      * @return ResponseEntity with:
-     *         - 201 Created: Newly created teacher with full details
-     *         - 400 Bad Request: If validation fails or college not found
-     *         - 500 Internal Server Error: If unexpected error occurs
+     * - 201 Created: Newly created teacher with full details
+     * - 400 Bad Request: If validation fails or college not found
+     * - 500 Internal Server Error: If unexpected error occurs
      */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -85,12 +88,12 @@ public class TeacherControllers {
 
     /**
      * GET /teachers/{id} - Get teacher by ID
-     * 
+     *
      * @param id TeacherId to fetch
      * @return ResponseEntity with:
-     *         - 200 OK: Teacher with full details
-     *         - 404 Not Found: If teacher not found
-     *         - 500 Internal Server Error: If unexpected error occurs
+     * - 200 OK: Teacher with full details
+     * - 404 Not Found: If teacher not found
+     * - 500 Internal Server Error: If unexpected error occurs
      */
     @GetMapping("/{id}")
     @PreAuthorize("permitAll()")
@@ -110,14 +113,14 @@ public class TeacherControllers {
 
     /**
      * PUT /teachers/{id} - Update a teacher by ID
-     * 
+     *
      * @param id      TeacherId to update
      * @param request UpdateTeacherRequestDto with updated teacher details
      * @return ResponseEntity with:
-     *         - 200 OK: Updated teacher with full details
-     *         - 404 Not Found: If teacher not found
-     *         - 400 Bad Request: If validation fails
-     *         - 500 Internal Server Error: If unexpected error occurs
+     * - 200 OK: Updated teacher with full details
+     * - 404 Not Found: If teacher not found
+     * - 400 Bad Request: If validation fails
+     * - 500 Internal Server Error: If unexpected error occurs
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -140,12 +143,12 @@ public class TeacherControllers {
     /**
      * DELETE /teachers/{id} - Delete a teacher by ID (soft delete - sets isActive
      * to false)
-     * 
+     *
      * @param id TeacherId to delete
      * @return ResponseEntity with:
-     *         - 200 OK: Deletion successful
-     *         - 404 Not Found: If teacher not found
-     *         - 500 Internal Server Error: If unexpected error occurs
+     * - 200 OK: Deletion successful
+     * - 404 Not Found: If teacher not found
+     * - 500 Internal Server Error: If unexpected error occurs
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
@@ -160,6 +163,40 @@ public class TeacherControllers {
             log.error("Error deleting teacher with ID: {}", id, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
                     ApiResponse.error("Failed to delete teacher", "An error occurred while deleting teacher"));
+        }
+    }
+
+    /**
+     * GET /{teacherId}/courses - Get all courses assigned to a teacher
+     *
+     * @param teacherId the ID of the teacher
+     * @return ResponseEntity with:
+     * - 200 OK: List of courses assigned to teacher
+     * - 204 No Content: If no courses assigned
+     * - 404 Not Found: If teacher not found
+     * - 500 Internal Server Error: If unexpected error occurs
+     */
+    @GetMapping("/{teacherId}/courses")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<ApiResponse<List<CoursesForTeacherDto>>> getCoursesForTeacher(
+            @PathVariable Long teacherId) {
+        try {
+            log.info("Fetching all courses for teacher {}", teacherId);
+            List<CoursesForTeacherDto> courses = courseTeacherServices
+                    .getCoursesForTeacher(teacherId);
+
+            if (courses.isEmpty()) {
+                log.info("No courses found for teacher {}", teacherId);
+                return ResponseEntity.noContent().build();
+            }
+
+            log.info("Successfully fetched {} courses for teacher {}", courses.size(), teacherId);
+            return ResponseEntity.ok(
+                    ApiResponse.ok(courses, "Courses retrieved successfully"));
+        } catch (Exception e) {
+            log.error("Error fetching courses for teacher", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(ApiResponse.error("Failed to fetch courses", e.getMessage()));
         }
     }
 }
