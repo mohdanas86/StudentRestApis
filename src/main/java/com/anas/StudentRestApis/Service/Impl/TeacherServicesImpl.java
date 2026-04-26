@@ -1,5 +1,6 @@
 package com.anas.StudentRestApis.Service.Impl;
 
+import com.anas.StudentRestApis.Annotation.Auditable;
 import com.anas.StudentRestApis.Dto.CreateTeacherRequestDto;
 import com.anas.StudentRestApis.Dto.TeacherEntityDto;
 import com.anas.StudentRestApis.Dto.UpdateTeacherRequestDto;
@@ -65,6 +66,7 @@ public class TeacherServicesImpl implements TeacherServices {
      */
     @Override
     @Transactional
+    @Auditable(entityType = "TEACHER", action = "CREATE")
     public TeacherEntityDto createTeacher(CreateTeacherRequestDto request) {
 
         // Fetch college by ID, throw 404 if not found
@@ -127,6 +129,7 @@ public class TeacherServicesImpl implements TeacherServices {
      */
     @Override
     @Transactional
+    @Auditable(entityType = "TEACHER", action = "UPDATE", captureOldValues = true)
     public TeacherEntityDto updateTeacher(long id, UpdateTeacherRequestDto request) {
         // Fetch teacher by ID, throw 404 if not found
         TeacherEntity teacher = teacherRepository.findById(id)
@@ -180,6 +183,7 @@ public class TeacherServicesImpl implements TeacherServices {
      */
     @Override
     @Transactional
+    @Auditable(entityType = "TEACHER", action = "DELETE")
     public void deleteTeacherById(long id) {
         TeacherEntity teacher = teacherRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with ID: " + id));
